@@ -11,19 +11,19 @@ client.on("connect", () => {
   client.subscribe("dht11"); //(7) dht11을 구독하고 있는 작업을 수행하는 것까지 작성을 한다. 수신자를 설정 하는 작업
 });
 
-client.on("message", (topic, message) => {
+client.on("message", async (topic, message) => {
   //(8) {"tmp":25.00,"hum":37.00} =>JSON(Object) //message가 들어오면 아래의 작업을 수행을 하는데 우리가 mqtt에서 배웠을때 예시로 dht11 이라고 선언한 토픽에 대한 내용도 추가를 해줘야만 한다. 그래서 토픽과, 실제 값이 들어가는 인자 값 까지 챙겨야하니 이 부분을 참고한다.
   const { tmp, hum } = JSON.parse(message); //(9) 이작업은 mqtt에서 들어온 msg가 {"tmp":25.00,"hum":37.00}라는 문자열로 들어온다. 그런데 이건 너무 귀찮으니 JSON 형태로 바꿔주면 속성값으로 취급이 가능하기가 용이하기에 JSON으로 바꿔주는 작업을 수행한다.
 
   const dht11 = new DHT11({
-    //(19)객체를 생성을 하고
-    tmp, //20_값들을 집어 넣는 작업이다.
+    tmp,
     hum,
     created_at: getCurrentUTCDate(),
   });
+
   try {
-    const saveDHT11 = dht11.save(); //21_DB에 저장한 다음에
-    console.log("insert OK");
+    const saveDHT11 = await dht11.save(); //21_DB에 저장한 다음에
+    console.log("Inserted data : ", saveDHT11);
   } catch (err) {
     console.log({ message: err }); //22_예외 처리를 해주는 작업
   }
