@@ -6,30 +6,26 @@ const DHT11 = require("./models/DHT11"); //(18)모듈을 불러오고 이 객체
 //(4) nodejs ---> mosquitto server 즉 Nodejs에서 mosquitto server로 접속을 하는 작업이다.
 client.on("connect", () => {
   //(5)on이라는 함수가 이벤트 함수인데 "connect"가 된다면 {} 사이의 내용이 실행된다.
-  console.log("mqtt connect"); //(6) console 로그 창에 mqtt connect가 나오게 되고
+  console.log("MQTT Connected"); //(6) console 로그 창에 mqtt connect가 나오게 되고
   client.subscribe("dht11"); //(7) dht11을 구독하고 있는 작업을 수행하는 것까지 작성을 한다. 수신자를 설정 하는 작업
 });
 
 client.on("message", (topic, message) => {
   //(8) {"tmp":25.00,"hum":37.00} =>JSON(Object) //message가 들어오면 아래의 작업을 수행을 하는데 우리가 mqtt에서 배웠을때 예시로 dht11 이라고 선언한 토픽에 대한 내용도 추가를 해줘야만 한다. 그래서 토픽과, 실제 값이 들어가는 인자 값 까지 챙겨야하니 이 부분을 참고한다.
-  var obj = JSON.parse(message); //(9) 이작업은 mqtt에서 들어온 msg가 {"tmp":25.00,"hum":37.00}라는 문자열로 들어온다. 그런데 이건 너무 귀찮으니 JSON 형태로 바꿔주면 속성값으로 취급이 가능하기가 용이하기에 JSON으로 바꿔주는 작업을 수행한다.
-  var date = new Date(); //(10)우리는 tmp랑 hum 값만 취급했는데 여기에 date를 집어 넣고
-  var year = date.getFullYear();
-  var month = date.getMonth();
-  var today = date.getDate();
-  var hours = date.getHours();
-  var minutes = date.getMinutes();
-  var seconds = date.getSeconds(); //(11)표준시차
-  obj.created_at = new Date(
-    Date.UTC(year, month, today, hours, minutes, seconds)
-  ); //(11)created_at 이후로 date 를 넣어서 출력을 할 수도 있다. obj에 create를 하는 작업
-  console.log(obj);
+  const { tmp, hum } = JSON.parse(message); //(9) 이작업은 mqtt에서 들어온 msg가 {"tmp":25.00,"hum":37.00}라는 문자열로 들어온다. 그런데 이건 너무 귀찮으니 JSON 형태로 바꿔주면 속성값으로 취급이 가능하기가 용이하기에 JSON으로 바꿔주는 작업을 수행한다.
+  const date = new Date(); //(10)우리는 tmp랑 hum 값만 취급했는데 여기에 date를 집어 넣고
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const today = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds(); //(11)표준시차
 
   const dht11 = new DHT11({
     //(19)객체를 생성을 하고
-    tmp: obj.tmp, //20_값들을 집어 넣는 작업이다.
-    hum: obj.hum,
-    created_at: obj.created_at,
+    tmp, //20_값들을 집어 넣는 작업이다.
+    hum,
+    created_at: new Date(Date.UTC(year, month, today, hours, minutes, seconds)),
   });
   try {
     const saveDHT11 = dht11.save(); //21_DB에 저장한 다음에
